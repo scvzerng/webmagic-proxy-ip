@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -29,14 +30,20 @@ import static java.util.stream.Collectors.toList;
 public class IpPiple implements Pipeline {
     @Resource
     IpRepository ipRepository;
+
     public void process(ResultItems resultItems, Task task) {
-        List<Ip> ips   = resultItems.get("ips");
-        ips.stream().filter(ip-> Objects.isNull(ipRepository.findByIp(ip.getIp()))).forEach(ip->{
-            try{
-                ipRepository.save(ip);
-            }catch (Exception e){
-                log.error("{} saved error {}",JSON.toJSONString(ip),e.getMessage());
-            }
-        });
+        List<Ip> ips = resultItems.get("ips");
+        Optional.ofNullable(ips).ifPresent(exist ->
+                ips.stream().
+                        filter(ip ->
+                                Objects.isNull(ipRepository.findByIp(ip.getIp())))
+                        .forEach(ip -> {
+                            try {
+                                ipRepository.save(ip);
+                            } catch (Exception e) {
+                                log.error("{} saved error {}", JSON.toJSONString(ip), e.getMessage());
+                            }
+                        }));
+
     }
 }

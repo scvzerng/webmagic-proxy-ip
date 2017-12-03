@@ -1,6 +1,7 @@
 package com.zero.webmagic;
 
 import com.zero.webmagic.exception.ErrorPageException;
+import lombok.Setter;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -9,10 +10,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import us.codecraft.webmagic.Page;
-import us.codecraft.webmagic.Request;
-import us.codecraft.webmagic.Site;
-import us.codecraft.webmagic.Task;
+import us.codecraft.webmagic.*;
 import us.codecraft.webmagic.downloader.*;
 import us.codecraft.webmagic.proxy.Proxy;
 import us.codecraft.webmagic.proxy.ProxyProvider;
@@ -45,6 +43,8 @@ public class ReplaceInvalidHttpDownloader extends AbstractDownloader {
     private HttpUriRequestConverter httpUriRequestConverter = new HttpUriRequestConverter();
     @Resource
     private ProxyProvider proxyProvider;
+    @Setter
+    private Spider spider;
 
     private boolean responseHeader = true;
 
@@ -90,18 +90,12 @@ public class ReplaceInvalidHttpDownloader extends AbstractDownloader {
             onSuccess(request);
             logger.info("downloading page success {}", request.getUrl());
             return page;
-        } catch (IOException e) {
-//            logger.warn("download page {} error", request.getUrl(), e);
-            onError(request);
+        } catch (IOException |ErrorPageException  e) {
+            logger.warn("download page {} error", request.getUrl());
             this.proxyProvider.returnProxy(proxy,null,null);
-            return this.download(request,task);
-//            return page;
-        } catch (ErrorPageException e){
-            logger.warn("download page {} error", request.getUrl(), e);
             onError(request);
-            this.proxyProvider.returnProxy(proxy,null,null);
-            return this.download(request,task);
-        }finally {
+            return page;
+        } finally {
             if (httpResponse != null) {
                 //ensure the connection is released back to pool
                 EntityUtils.consumeQuietly(httpResponse.getEntity());
@@ -148,5 +142,10 @@ public class ReplaceInvalidHttpDownloader extends AbstractDownloader {
             logger.warn("Charset autodetect failed, use {} as charset. Please specify charset in Site.setCharset()", Charset.defaultCharset());
         }
         return charset;
+    }
+
+    @Override
+    protected void onError(Request request) {
+        spider.addRequest(request);
     }
 }

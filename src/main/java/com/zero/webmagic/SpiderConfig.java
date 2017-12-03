@@ -7,6 +7,7 @@ import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.downloader.Downloader;
 import us.codecraft.webmagic.pipeline.Pipeline;
 import us.codecraft.webmagic.processor.PageProcessor;
+import us.codecraft.webmagic.scheduler.Scheduler;
 
 import javax.annotation.Resource;
 
@@ -22,11 +23,15 @@ import javax.annotation.Resource;
 public class SpiderConfig {
 
    @Bean
-    public Spider spider(Pipeline pipeline,PageProcessor pageProcessor,Downloader downloader){
-       return Spider.create(pageProcessor)
+    public Spider spider(Pipeline pipeline,PageProcessor pageProcessor,ReplaceInvalidHttpDownloader downloader,Scheduler scheduler){
+       Spider spider = Spider.create(pageProcessor)
                .setDownloader(downloader)
                .addPipeline(pipeline)
+               .setScheduler(scheduler)
                .thread(50);
+       spider.setEmptySleepTime(1000);
+       downloader.setSpider(spider);
+       return spider;
 
    }
 }
