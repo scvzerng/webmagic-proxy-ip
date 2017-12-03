@@ -1,0 +1,15 @@
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/zero?characterEncoding=utf8&useSSL=true
+    password: root
+    username: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+  application:
+    name: webmagic-proxy-ip
+logging:
+  file: D://logs/${spring.application.name}.log
+  level: info
+
