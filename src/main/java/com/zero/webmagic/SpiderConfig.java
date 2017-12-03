@@ -26,7 +26,7 @@ public class SpiderConfig {
        return Spider.create(pageProcessor)
                .setDownloader(downloader)
                .addPipeline(pipeline)
-               .thread(1);
+               .thread(50);
 
    }
 }

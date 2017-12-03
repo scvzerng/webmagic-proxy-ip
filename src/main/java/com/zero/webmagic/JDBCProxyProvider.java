@@ -13,6 +13,7 @@ import us.codecraft.webmagic.proxy.ProxyProvider;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,15 +40,13 @@ public class JDBCProxyProvider implements ProxyProvider {
 
     @Override
     public Proxy getProxy(Task task) {
-        Pageable pageable = PageRequest.of(1,1);
-        org.springframework.data.domain.Page<Ip> page = ipRepository.findByCanUse(true,pageable);
-        List<Ip> content = page.getContent();
+        int offset = new Random().nextInt((int) ipRepository.countByCanUseIsTrue());
+        Ip ip = ipRepository.randomIp(offset);
 
-        if(CollectionUtils.isEmpty(content)){
+        if(ip==null){
             return null;
         }
-        Ip proxy = content.get(0);
-        return new Proxy(proxy.getIp(),proxy.getPort());
+        return new Proxy(ip.getIp(),ip.getPort());
     }
 
 }
