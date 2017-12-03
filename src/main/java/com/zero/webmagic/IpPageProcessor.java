@@ -16,6 +16,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Administrator
@@ -55,10 +57,13 @@ public class IpPageProcessor implements PageProcessor {
                     }
 
                 });
+        System.out.println(String.format("url:%s data:%d",page.getUrl(),pageIps.size()));
         page.putField("ips",pageIps);
+        List<String> links = page.getHtml().links().regex(".+/nn/\\d+").all();
+        List<String> unProcessed = links.stream().filter(link->!isProcessing.containsKey(link)).collect(toList());
+        unProcessed.forEach(link-> isProcessing.put(link,false));
 
-        List<String> links = page.getHtml().links().regex(".+/nn/\\d+").all().stream().distinct().filter(url->isProcessing.get(url)==null|| !isProcessing.get(url)).collect(Collectors.toList());
-        page.addTargetRequests(links);
+        page.addTargetRequests(unProcessed);
 
     }
 

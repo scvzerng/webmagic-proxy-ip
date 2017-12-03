@@ -12,4 +12,3 @@ spring:
 logging:
   file: D://logs/${spring.application.name}.log
   level: info
-
