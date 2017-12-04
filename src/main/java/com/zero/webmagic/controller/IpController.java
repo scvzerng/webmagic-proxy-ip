@@ -46,7 +46,10 @@ public class IpController {
         return new ArrayList<>(Collections.singletonList(ip));
     }
 
-
+    @PostMapping
+   public Ip add(@RequestBody Ip ip){
+        return ipRepository.save(ip);
+    }
     @GetMapping("/fetch")
     public void fetch(@RequestParam(defaultValue = DEFAULT_URL) String url){
 

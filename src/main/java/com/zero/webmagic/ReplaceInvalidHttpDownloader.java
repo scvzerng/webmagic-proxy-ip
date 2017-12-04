@@ -126,7 +126,7 @@ public class ReplaceInvalidHttpDownloader extends AbstractDownloader {
         page.setUrl(new PlainText(request.getUrl()));
         page.setRequest(request);
         page.setStatusCode(httpResponse.getStatusLine().getStatusCode());
-        if(page.getStatusCode()!=200||!page.getHtml().get().contains("xicidaili")) throw new ErrorPageException("不是有效页面:"+page.getRawText());
+        if(page.getStatusCode()!=200||!page.getHtml().get().contains("国内高匿代理IP")) throw new ErrorPageException("不是有效页面:"+page.getRawText());
 
         page.setDownloadSuccess(true);
         if (responseHeader) {

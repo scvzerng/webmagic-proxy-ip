@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 
@@ -17,7 +18,7 @@ import org.springframework.data.repository.query.Param;
  * To change this template use File | Settings | File Templates.
  */
 
-public interface IpRepository extends CrudRepository<Ip,Long> {
+public interface IpRepository extends CrudRepository<Ip,Long>,PagingAndSortingRepository<Ip,Long> {
     Ip findByIp(String ip);
     Ip findByIpAndPort(String ip,Integer port);
     Page<Ip> findByCanUse(Boolean canUse, Pageable pageable);

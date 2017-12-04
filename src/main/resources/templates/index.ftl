@@ -11,6 +11,13 @@
     <a class="active item">代理IP</a>
 
 </div>
-<div class="ui primary button">爬取IP</div>
+<div class="ui primary button" onclick="$.get('/ips/fetch')">爬取IP</div>
+<div class="ui green button" id="addIp">
 
+</div>
+<script>
+    $("#addIp").click(function () {
+
+    })
+</script>
 </html>

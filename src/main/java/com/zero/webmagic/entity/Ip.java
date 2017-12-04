@@ -35,4 +35,5 @@ public class Ip implements Serializable {
     private Boolean canUse;
     private Integer failCount;
     private LocalDateTime insertTime;
+    private LocalDateTime updateTime;
 }

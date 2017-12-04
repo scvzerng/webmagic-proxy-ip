@@ -13,7 +13,10 @@ import us.codecraft.webmagic.proxy.ProxyProvider;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,9 +30,10 @@ import java.util.Random;
 public class JDBCProxyProvider implements ProxyProvider {
     @Resource
     IpRepository ipRepository;
+    AtomicBoolean INIT = new AtomicBoolean(true);
     @Override
     public void returnProxy(Proxy proxy, Page page, Task task) {
-        if(page==null||!page.isDownloadSuccess()){
+        if((Objects.isNull(page)||!page.isDownloadSuccess())&& Objects.nonNull(proxy)){
 
             Ip ip = ipRepository.findByIpAndPort(proxy.getHost(),proxy.getPort());
             ip.setCanUse(false);
@@ -40,6 +44,7 @@ public class JDBCProxyProvider implements ProxyProvider {
 
     @Override
     public Proxy getProxy(Task task) {
+        if(INIT.getAndSet(false)) return null;
         int seeds = (int) ipRepository.countByCanUseIsTrue();
         int offset = new Random().nextInt(seeds==0?1:seeds);
         Ip ip = ipRepository.randomIp(offset);
