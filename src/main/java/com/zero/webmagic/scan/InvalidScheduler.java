@@ -35,9 +35,9 @@ public class InvalidScheduler {
     /**
      * 每分钟一次定时任务
      */
-    @Scheduled(cron = "0/5 * * * * ?")
+    @Scheduled(cron = "0/1 * * * * ?")
     public void testIpValid(){
-        Pageable pageable = PageRequest.of(1,100);
+        Pageable pageable = PageRequest.of(1,10);
         pageable.getSort().and(Sort.by(Sort.Order.asc("updateTime")));
         Page<Ip> page = ipRepository.findAll(pageable);
         if(page.hasContent()){
@@ -48,7 +48,6 @@ public class InvalidScheduler {
                 try {
                     InetAddress address = InetAddress.getByName(ip.getIp());
                     Socket socket = new Socket(address,ip.getPort());
-                    socket.setSoTimeout(200);
                     socket.close();
                     ip.setCanUse(true);
                     ipRepository.save(ip);
