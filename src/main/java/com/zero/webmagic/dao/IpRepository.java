@@ -21,10 +21,9 @@ import org.springframework.data.repository.query.Param;
 public interface IpRepository extends CrudRepository<Ip,Long>,PagingAndSortingRepository<Ip,Long> {
     Ip findByIp(String ip);
     Ip findByIpAndPort(String ip,Integer port);
-    Page<Ip> findByCanUse(Boolean canUse, Pageable pageable);
 
-    @Query(nativeQuery = true,value = "select * from ip where ip.can_use=true limit :start,1 ")
-    Ip randomIp(@Param("start") int offset);
-
-    long countByCanUseIsTrue();
+    @Query(nativeQuery = true,value = "select * from ip where ip.can_use=true and ip.fail_count<30 limit :start,1 ")
+    Ip randomQualityIp(@Param("start") int offset);
+    @Query(nativeQuery = true,value = "select count(*) from ip where ip.can_use=true and ip.fail_count<30")
+    long queryQualityCount();
 }

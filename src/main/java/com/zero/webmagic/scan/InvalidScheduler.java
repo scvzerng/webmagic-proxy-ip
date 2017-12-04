@@ -37,8 +37,8 @@ public class InvalidScheduler {
      */
     @Scheduled(cron = "0/1 * * * * ?")
     public void testIpValid(){
-        Pageable pageable = PageRequest.of(1,10);
-        pageable.getSort().and(Sort.by(Sort.Order.asc("updateTime")));
+        Pageable pageable = PageRequest.of(1,100,Sort.by(Sort.Order.asc("updateTime")));
+
         Page<Ip> page = ipRepository.findAll(pageable);
         if(page.hasContent()){
            List<Ip> validIps =  page.getContent();

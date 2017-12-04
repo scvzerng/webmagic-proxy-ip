@@ -68,6 +68,6 @@ public class IpPageProcessor implements PageProcessor {
     }
 
     public Site getSite() {
-        return Site.me().setSleepTime(3000).addHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36").setSleepTime(1000);
+        return Site.me().setCharset("UTF-8").setSleepTime(3000).addHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36").setSleepTime(1000);
     }
 }

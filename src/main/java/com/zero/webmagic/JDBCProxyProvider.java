@@ -45,9 +45,9 @@ public class JDBCProxyProvider implements ProxyProvider {
     @Override
     public Proxy getProxy(Task task) {
         if(INIT.getAndSet(false)) return null;
-        int seeds = (int) ipRepository.countByCanUseIsTrue();
+        int seeds = (int) ipRepository.queryQualityCount();
         int offset = new Random().nextInt(seeds==0?1:seeds);
-        Ip ip = ipRepository.randomIp(offset);
+        Ip ip = ipRepository.randomQualityIp(offset);
 
         if(ip==null){
             return null;

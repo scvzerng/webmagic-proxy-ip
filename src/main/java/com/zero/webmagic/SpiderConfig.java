@@ -28,7 +28,7 @@ public class SpiderConfig {
                .setDownloader(downloader)
                .addPipeline(pipeline)
                .setScheduler(scheduler)
-               .thread(50);
+               .thread(3);
        spider.setEmptySleepTime(1000);
        downloader.setSpider(spider);
        return spider;
