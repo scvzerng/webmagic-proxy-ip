@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class JDBCProxyProvider implements ProxyProvider {
     @Resource
     IpRepository ipRepository;
+
     AtomicBoolean INIT = new AtomicBoolean(true);
     @Override
     public void returnProxy(Proxy proxy, Page page, Task task) {
@@ -50,6 +51,13 @@ public class JDBCProxyProvider implements ProxyProvider {
         Ip ip = ipRepository.randomQualityIp(offset);
 
         if(ip==null){
+            try {
+                synchronized (this){
+                    this.wait();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return null;
         }
         return new Proxy(ip.getIp(),ip.getPort());

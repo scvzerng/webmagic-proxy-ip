@@ -88,10 +88,10 @@ public class ReplaceInvalidHttpDownloader extends AbstractDownloader {
             httpResponse = httpClient.execute(requestContext.getHttpUriRequest(), requestContext.getHttpClientContext());
             page = handleResponse(request, request.getCharset() != null ? request.getCharset() : task.getSite().getCharset(), httpResponse, task);
             onSuccess(request);
-            logger.info("downloading page success {}", request.getUrl());
+            logger.info("downloading page success {} {}:{}", request.getUrl(),proxy==null?"":proxy.getHost(),proxy==null?"":proxy.getPort());
             return page;
         } catch (IOException |ErrorPageException  e) {
-//            logger.warn("download page {} error", request.getUrl());
+            logger.warn("download page {} error", request.getUrl());
             this.proxyProvider.returnProxy(proxy,null,null);
             onError(request);
             return page;

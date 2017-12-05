@@ -1,5 +1,6 @@
 package com.zero.webmagic.scan;
 
+import com.zero.webmagic.JDBCProxyProvider;
 import com.zero.webmagic.dao.IpRepository;
 import com.zero.webmagic.entity.Ip;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * description
@@ -31,7 +34,8 @@ import java.util.List;
 public class InvalidScheduler {
     @Resource
     IpRepository ipRepository;
-
+    @Resource
+    JDBCProxyProvider provider;
     /**
      * 每分钟一次定时任务
      */
@@ -52,10 +56,15 @@ public class InvalidScheduler {
                     ip.setCanUse(true);
                     ipRepository.save(ip);
                     log.info("is valid {}:{}",ip.getIp(),ip.getPort());
+                    synchronized (provider){
+                        provider.notifyAll();
+                    }
                 } catch (IOException e) {
-                    ipRepository.save(ip);
-                   log.info("is invalid {}:{}",ip.getIp(),ip.getPort());
+                    ipRepository.delete(ip);
+                    log.info("delete {}:{}",ip.getIp(),ip.getPort());
                 }
+
+
             });
         }
     }

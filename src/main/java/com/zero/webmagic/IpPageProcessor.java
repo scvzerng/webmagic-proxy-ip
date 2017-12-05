@@ -2,6 +2,7 @@ package com.zero.webmagic;
 
 import com.zero.webmagic.entity.Ip;
 import com.zero.webmagic.exception.ErrorPageException;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;
@@ -49,7 +50,7 @@ public class IpPageProcessor implements PageProcessor {
                         ip.setSpeed(nodes.get(6).xpath("//td/div/@title").get());
                         ip.setConnectTime(nodes.get(7).xpath("//td/div/@title").get());
                         ip.setAliveTime(nodes.get(8).xpath("//td/text()").get());
-                        ip.setCanUse(true);
+                        ip.setCanUse(false);
                         ip.setFailCount(0);
                         ip.setInsertTime(LocalDateTime.now());
                         ip.setCheckTime(LocalDateTime.parse(nodes.get(9).xpath("//td/text()").get(),DateTimeFormatter.ofPattern("yy-MM-dd HH:mm")));
@@ -68,6 +69,9 @@ public class IpPageProcessor implements PageProcessor {
     }
 
     public Site getSite() {
-        return Site.me().setCharset("UTF-8").setSleepTime(3000).addHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36").setSleepTime(1000);
+        return Site.me()
+                .setCharset("UTF-8")
+                .setSleepTime(3000)
+                .addHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36");
     }
 }
