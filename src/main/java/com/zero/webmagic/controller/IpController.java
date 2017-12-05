@@ -4,7 +4,10 @@ import com.zero.webmagic.IpPageProcessor;
 import com.zero.webmagic.IpPiple;
 import com.zero.webmagic.ReplaceInvalidHttpDownloader;
 import com.zero.webmagic.dao.IpRepository;
+import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Ip;
+import com.zero.webmagic.entity.Url;
+import com.zero.webmagic.enums.FetchStatusEnum;
 import com.zero.webmagic.scan.IpConsumer;
 import com.zero.webmagic.scan.IpGenerator;
 import org.springframework.util.StringUtils;
@@ -19,6 +22,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,11 +36,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/ips")
 public class IpController {
-
+    @Resource
+    UrlRepository urlRepository;
     @Resource
     IpRepository ipRepository;
 
-    private static final String DEFAULT_URL = "http://www.xicidaili.com/nn/";
+    private static final String DEFAULT_URL = "http://www.kuaidaili.com/free/inha/";
     @Resource
     Spider spider;
     @GetMapping
@@ -52,8 +58,29 @@ public class IpController {
     }
     @GetMapping("/fetch")
     public void fetch(@RequestParam(defaultValue = DEFAULT_URL) String url){
+        Url root = urlRepository.findUrlByUrl(url);
 
-        spider.addUrl(url).setSpawnUrl(true).start();
+        if(root!=null){
+            root.setStatus(FetchStatusEnum.FAIL);
+            urlRepository.save(root);
+            //装载初始url
+            Optional
+                    .ofNullable(
+                            urlRepository.findUrlsByParentIdAndStatusIn(root.getId(),
+                                    FetchStatusEnum.FAIL,
+                                    FetchStatusEnum.LOCK)
+                    ).ifPresent(
+                    list->{
+                            urlRepository.saveAll(list.stream().peek(u-> u.setStatus(FetchStatusEnum.FAIL)).collect(Collectors.toList()));
+                            list.stream()
+                                    .map(Url::getUrl)
+                                    .forEach(spider::addUrl);
+                    });
+
+        }
+        spider.addUrl(url);
+
+        spider.setSpawnUrl(true).start();
     }
 
     @GetMapping("/scan")

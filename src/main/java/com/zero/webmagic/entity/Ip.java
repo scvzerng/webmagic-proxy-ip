@@ -1,12 +1,16 @@
 package com.zero.webmagic.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,14 +30,16 @@ public class Ip implements Serializable {
     private String ip;
     private Integer port;
     private String city;
-    private Boolean isOpen;
+    private Boolean isOpen = false;
     private String type;
     private String speed;
     private String connectTime;
     private String aliveTime;
-    private LocalDateTime checkTime;
-    private Boolean canUse;
-    private Integer failCount;
+    private LocalDateTime checkTime = LocalDateTime.now();
+    private Boolean canUse = false;
+    private Integer failCount = 0;
     private LocalDateTime insertTime;
     private LocalDateTime updateTime;
+    @OneToMany(mappedBy ="url")
+    private Set<Url> urls;
 }

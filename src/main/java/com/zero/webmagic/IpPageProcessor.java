@@ -1,7 +1,12 @@
 package com.zero.webmagic;
 
+import com.zero.webmagic.dao.IpUrlRepository;
+import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Ip;
+import com.zero.webmagic.entity.Url;
+import com.zero.webmagic.enums.FetchStatusEnum;
 import com.zero.webmagic.exception.ErrorPageException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Page;
@@ -11,6 +16,7 @@ import us.codecraft.webmagic.model.annotation.ExtractBy;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.selector.Selectable;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -28,43 +34,44 @@ import static java.util.stream.Collectors.toList;
  * To change this template use File | Settings | File Templates.
  */
 @Component
+@Slf4j
 public class IpPageProcessor implements PageProcessor {
-    Map<String,Boolean> isProcessing = new ConcurrentHashMap<>();
+    @Resource
+    private UrlRepository urlRepository;
     public void process(Page page) {
-        if(isProcessing.getOrDefault(page.getUrl().get(),false)) return;
+
         List<Ip> pageIps = new ArrayList<>();
-        isProcessing.put(page.getUrl().get(),true);
+
         page.getHtml()
-                .$("#ip_list")
+                .$("#list")
                 .xpath("//tbody/tr")
                 .nodes()
                 .forEach(node->{
                     List<Selectable> nodes = node.xpath("//tr/td").nodes();
                     if(nodes.size()>0){
                         Ip ip = new Ip();
-                        ip.setIp(nodes.get(1).xpath("//td/text()").get());
-                        ip.setPort(Integer.valueOf(nodes.get(2).xpath("//td/text()").get()));
-                        ip.setCity(nodes.get(3).xpath("//a/text()").get());
-                        ip.setIsOpen(nodes.get(4).xpath("//td/text()").get().equals("高匿"));
-                        ip.setType(nodes.get(5).xpath("//td/text()").get());
-                        ip.setSpeed(nodes.get(6).xpath("//td/div/@title").get());
-                        ip.setConnectTime(nodes.get(7).xpath("//td/div/@title").get());
-                        ip.setAliveTime(nodes.get(8).xpath("//td/text()").get());
+                        ip.setIp(nodes.get(0).xpath("//td/text()").get());
+                        ip.setPort(Integer.valueOf(nodes.get(1).xpath("//td/text()").get()));
+                        ip.setIsOpen(nodes.get(2).xpath("//td/text()").get().equals("高匿名"));
+                        ip.setType(nodes.get(3).xpath("//td/text()").get());
+                        ip.setCity(nodes.get(4).xpath("//td/text()").get());
+                        ip.setSpeed(nodes.get(5).xpath("//td/text()").get());
                         ip.setCanUse(false);
                         ip.setFailCount(0);
                         ip.setInsertTime(LocalDateTime.now());
-                        ip.setCheckTime(LocalDateTime.parse(nodes.get(9).xpath("//td/text()").get(),DateTimeFormatter.ofPattern("yy-MM-dd HH:mm")));
+                        ip.setCheckTime(LocalDateTime.parse(nodes.get(6).xpath("//td/text()").get(),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                         pageIps.add(ip);
                     }
 
                 });
         System.out.println(String.format("url:%s data:%d",page.getUrl(),pageIps.size()));
         page.putField("ips",pageIps);
-        List<String> links = page.getHtml().links().regex(".+/nn/\\d+").all();
-        List<String> unProcessed = links.stream().filter(link->!isProcessing.containsKey(link)).collect(toList());
-        unProcessed.forEach(link-> isProcessing.put(link,false));
+        Url url = urlRepository.findUrlByUrl(page.getUrl().get());
 
-        page.addTargetRequests(unProcessed);
+        url.setStatus(FetchStatusEnum.SUCCESS);
+        urlRepository.save(url);
+        List<String> links = page.getHtml().links().regex(".+/inha/\\d+").all();
+        page.addTargetRequests(links);
 
     }
 
