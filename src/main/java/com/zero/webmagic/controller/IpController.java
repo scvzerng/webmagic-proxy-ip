@@ -1,8 +1,5 @@
 package com.zero.webmagic.controller;
 
-import com.zero.webmagic.IpPageProcessor;
-import com.zero.webmagic.IpPiple;
-import com.zero.webmagic.ReplaceInvalidHttpDownloader;
 import com.zero.webmagic.dao.IpRepository;
 import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Ip;
@@ -10,13 +7,8 @@ import com.zero.webmagic.entity.Url;
 import com.zero.webmagic.enums.FetchStatusEnum;
 import com.zero.webmagic.scan.IpConsumer;
 import com.zero.webmagic.scan.IpGenerator;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import us.codecraft.webmagic.Spider;
-import us.codecraft.webmagic.downloader.Downloader;
-import us.codecraft.webmagic.downloader.HttpClientDownloader;
-import us.codecraft.webmagic.pipeline.Pipeline;
-import us.codecraft.webmagic.processor.PageProcessor;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;

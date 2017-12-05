@@ -1,6 +1,6 @@
 package com.zero.webmagic.ip.proxy.scheduler;
 
-import com.zero.webmagic.JDBCProxyProvider;
+import com.zero.webmagic.proxy.JDBCProxyProvider;
 import com.zero.webmagic.dao.IpRepository;
 import com.zero.webmagic.entity.Ip;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -1,4 +1,4 @@
-package com.zero.webmagic;
+package com.zero.webmagic.proxy;
 
 import com.zero.webmagic.dao.IpRepository;
 import com.zero.webmagic.entity.Ip;

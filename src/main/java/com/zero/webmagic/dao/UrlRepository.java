@@ -16,11 +16,7 @@ import java.util.List;
  * @author scvzerng
  **/
 public interface UrlRepository extends CrudRepository<Url,Long> {
-     Url findUrlByUrlAndStatusIn(String url, FetchStatusEnum... statusEnum);
      List<Url> findUrlsByStatusIn(FetchStatusEnum... statusEnum);
     Url findUrlByUrl(String url);
-
-    List<Url> findUrlsByUrlIn(List<String> urls);
-
     List<Url> findUrlsByParentIdAndStatusIn(Long id,FetchStatusEnum... statusEnum);
 }

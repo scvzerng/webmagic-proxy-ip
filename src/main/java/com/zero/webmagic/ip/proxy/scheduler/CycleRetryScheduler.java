@@ -1,4 +1,4 @@
-package com.zero.webmagic;
+package com.zero.webmagic.ip.proxy.scheduler;
 
 import com.zero.webmagic.controller.IpController;
 import com.zero.webmagic.dao.UrlRepository;

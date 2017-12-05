@@ -1,4 +1,4 @@
-package com.zero.webmagic;
+package com.zero.webmagic.ip.piple;
 
 import com.alibaba.fastjson.JSON;
 import com.zero.webmagic.dao.IpRepository;
@@ -11,11 +11,9 @@ import us.codecraft.webmagic.pipeline.Pipeline;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,6 +27,7 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class IpPiple implements Pipeline {
     @Resource
+    private
     IpRepository ipRepository;
 
     public void process(ResultItems resultItems, Task task) {
