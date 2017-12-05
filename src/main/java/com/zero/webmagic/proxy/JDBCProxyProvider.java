@@ -2,6 +2,7 @@ package com.zero.webmagic.proxy;
 
 import com.zero.webmagic.dao.IpRepository;
 import com.zero.webmagic.entity.Ip;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * To change this template use File | Settings | File Templates.
  */
 @Component
+@Slf4j
 public class JDBCProxyProvider implements ProxyProvider {
     @Resource
     IpRepository ipRepository;
@@ -35,7 +37,7 @@ public class JDBCProxyProvider implements ProxyProvider {
     @Override
     public void returnProxy(Proxy proxy, Page page, Task task) {
         if((Objects.isNull(page)||!page.isDownloadSuccess())&& Objects.nonNull(proxy)){
-
+            log.info("{}:{} mark can not use",proxy.getHost(),proxy.getPort());
             Ip ip = ipRepository.findByIpAndPort(proxy.getHost(),proxy.getPort());
             ip.setCanUse(false);
             ip.setFailCount(ip.getFailCount()==null?0:ip.getFailCount()+1);

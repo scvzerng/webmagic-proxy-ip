@@ -89,7 +89,7 @@ public class ProxyIpCheckScheduler {
             }
         } catch (IOException e) {
             ipRepository.delete(ip);
-            log.info("delete {}:{}",ip.getIp(),ip.getPort());
+            log.debug("delete {}:{}",ip.getIp(),ip.getPort());
         }
     }
 }
