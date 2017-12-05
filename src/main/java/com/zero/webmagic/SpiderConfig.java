@@ -37,7 +37,7 @@ public class SpiderConfig {
                .setDownloader(downloader)
                .addPipeline(pipeline)
                .setScheduler(scheduler)
-               .thread(3);
+               .thread(1);
 
        downloader.setSpider(spider);
        return spider;

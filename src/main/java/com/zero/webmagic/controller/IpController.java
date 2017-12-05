@@ -61,8 +61,6 @@ public class IpController {
         Url root = urlRepository.findUrlByUrl(url);
 
         if(root!=null){
-            root.setStatus(FetchStatusEnum.FAIL);
-            urlRepository.save(root);
             //装载初始url
             Optional
                     .ofNullable(
@@ -76,9 +74,13 @@ public class IpController {
                                     .map(Url::getUrl)
                                     .forEach(spider::addUrl);
                     });
+            if(root.getStatus()==FetchStatusEnum.FAIL){
+                spider.addUrl(url);
+            }
+        }else{
+            spider.addUrl(url);
 
         }
-        spider.addUrl(url);
 
         spider.setSpawnUrl(true).start();
     }
