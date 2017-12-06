@@ -40,6 +40,6 @@ public class Ip implements Serializable {
     private Integer failCount = 0;
     private LocalDateTime insertTime;
     private LocalDateTime updateTime;
-    @OneToMany(mappedBy ="url")
+    @OneToMany(mappedBy ="url",fetch = FetchType.EAGER)
     private Set<Url> urls;
 }

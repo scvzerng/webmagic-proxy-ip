@@ -5,6 +5,9 @@ import com.zero.webmagic.entity.Ip;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import us.codecraft.webmagic.Page;
@@ -12,12 +15,21 @@ import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.proxy.Proxy;
 import us.codecraft.webmagic.proxy.ProxyProvider;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,37 +44,137 @@ import java.util.concurrent.atomic.AtomicReference;
 public class JDBCProxyProvider implements ProxyProvider {
     @Resource
     IpRepository ipRepository;
+    //有效IP队列
+    private BlockingQueue<Ip> validIp = new LinkedBlockingQueue<>();
+    //锁定队列
+    private Map<Ip,Ip> lockIp = new ConcurrentHashMap<>();
+    //失效队列
+    private BlockingQueue<Ip> invalidIp = new LinkedBlockingQueue<>();
 
-    AtomicBoolean INIT = new AtomicBoolean(true);
+    private ExecutorService executorService = Executors.newFixedThreadPool(30);
+
+    private AtomicBoolean INIT = new AtomicBoolean(true);
+
     @Override
     public void returnProxy(Proxy proxy, Page page, Task task) {
-        if((Objects.isNull(page)||!page.isDownloadSuccess())&& Objects.nonNull(proxy)){
-            log.info("{}:{} mark can not use",proxy.getHost(),proxy.getPort());
-            Ip ip = ipRepository.findByIpAndPort(proxy.getHost(),proxy.getPort());
-            ip.setCanUse(false);
-            ip.setFailCount(ip.getFailCount()==null?0:ip.getFailCount()+1);
-            ipRepository.save(ip);
-        }
+            if ((Objects.isNull(page) || !page.isDownloadSuccess()) && Objects.nonNull(proxy)) {
+                if(proxy instanceof IpProxy){
+                    IpProxy ipProxy = (IpProxy) proxy;
+                    this.makeIpInvalid(ipProxy.getIp());
+                }
+
+
+            }
     }
 
     @Override
     public Proxy getProxy(Task task) {
-        if(INIT.getAndSet(false)) return null;
-        int seeds = (int) ipRepository.queryQualityCount();
-        int offset = new Random().nextInt(seeds==0?1:seeds);
-        Ip ip = ipRepository.randomQualityIp(offset);
+            if (INIT.getAndSet(false)) return null;
 
-        if(ip==null){
-            try {
-                synchronized (this){
-                    this.wait();
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return null;
+        try {
+            return new IpProxy(this.getValidIp());
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        return new Proxy(ip.getIp(),ip.getPort());
+
     }
 
+    public void addValidIp(Ip ip) throws InterruptedException {
+        if(ip==null) return;
+        if(validIp.contains(ip)) return;
+        validIp.put(ip);
+    }
+
+    public Ip getValidIp() throws InterruptedException {
+        Ip ip = validIp.take();
+        lockIp.put(ip,ip);
+        return ip;
+    }
+
+    public void makeIpInvalid(Ip ip) {
+        Ip locked =  lockIp.remove(ip);
+        if(locked==null) return;
+        try {
+            ip.setCanUse(false);
+            ip.setFailCount(ip.getFailCount() == null ? 0 : ip.getFailCount() + 1);
+            invalidIp.put(ip);
+            log.info("{}:{} [{}] is invalid",ip.getIp(),ip.getPort(),ip.getFailCount());
+        } catch (InterruptedException e) {
+            log.error(e.getMessage(),e);
+        }
+    }
+
+    public void addInValidIp(Ip ip) {
+        if(invalidIp.contains(ip)) return;
+        try {
+            invalidIp.put(ip);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Ip getInvalidIp() throws InterruptedException {
+        return invalidIp.take();
+    }
+
+    private void checkIp(Ip ip){
+        ip.setUpdateTime(LocalDateTime.now());
+
+        try {
+            InetAddress address = InetAddress.getByName(ip.getIp());
+            Socket socket = new Socket(address,ip.getPort());
+            socket.close();
+            ip.setCanUse(true);
+            ipRepository.save(ip);
+            this.addValidIp(ip);
+            log.info("is valid {}:{}",ip.getIp(),ip.getPort());
+        } catch (IOException e) {
+            ipRepository.delete(ip);
+            log.info("delete {}:{}",ip.getIp(),ip.getPort());
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+
+    /**
+     * 每秒抽取100IP放到队列等待验证其有效性
+     */
+    @Scheduled(cron = "0/1 * * * * ?")
+    public void fetchValidIps(){
+        Pageable pageable = PageRequest.of(0,100, Sort.by(Sort.Order.asc("updateTime")));
+
+        org.springframework.data.domain.Page<Ip> page = ipRepository.findAll(pageable);
+        if(page.hasContent()){
+            page.getContent().forEach(this::addInValidIp);
+
+        }
+    }
+
+
+
+    /**
+     * 每30秒钟发起对Ip的有效性验证
+     */
+    @Scheduled(cron = "0/30 * * * * ?")
+    @Async
+    public void checkIpIsValid() throws InterruptedException {
+        while (true){
+            Ip ip =  this.getInvalidIp();
+            if(ip==null) break;
+            executorService.submit(()-> checkIp(ip));
+
+        }
+    }
+
+    @PreDestroy
+    public void destroy(){
+        while(true){
+            Ip ip =  invalidIp.poll();
+            if(ip==null) break;
+            ipRepository.save(ip);
+
+        }
+    }
 }

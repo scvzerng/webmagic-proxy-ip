@@ -38,7 +38,9 @@ public class IpPiple implements Pipeline {
                                 Objects.isNull(ipRepository.findByIp(ip.getIp())))
                         .forEach(ip -> {
                             try {
-                                ipRepository.save(ip);
+                                synchronized (ipRepository){
+                                    ipRepository.save(ip);
+                                }
                             } catch (Exception e) {
                                 log.error("{} saved error {}", JSON.toJSONString(ip), e.getMessage());
                             }

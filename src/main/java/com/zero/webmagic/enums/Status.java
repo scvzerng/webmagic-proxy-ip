@@ -7,6 +7,6 @@ package com.zero.webmagic.enums;
  *
  * @author scvzerng
  **/
-public enum FetchStatusEnum {
+public enum Status {
     SUCCESS,FAIL,LOCK
 }

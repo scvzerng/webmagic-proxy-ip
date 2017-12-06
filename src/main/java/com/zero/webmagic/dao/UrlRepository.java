@@ -1,8 +1,7 @@
 package com.zero.webmagic.dao;
 
 import com.zero.webmagic.entity.Url;
-import com.zero.webmagic.enums.FetchStatusEnum;
-import org.springframework.data.jpa.repository.Query;
+import com.zero.webmagic.enums.Status;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.List;
  * @author scvzerng
  **/
 public interface UrlRepository extends CrudRepository<Url,Long> {
-     List<Url> findUrlsByStatusIn(FetchStatusEnum... statusEnum);
+     List<Url> findUrlsByStatusIn(Status... statusEnum);
     Url findUrlByUrl(String url);
-    List<Url> findUrlsByParentIdAndStatusIn(Long id,FetchStatusEnum... statusEnum);
+    List<Url> findUrlsByParentIdAndStatusIn(Long id,Status... statusEnum);
 }

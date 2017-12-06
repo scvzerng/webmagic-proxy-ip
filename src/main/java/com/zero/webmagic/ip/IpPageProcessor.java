@@ -1,18 +1,13 @@
 package com.zero.webmagic.ip;
 
-import com.zero.webmagic.dao.IpUrlRepository;
 import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Ip;
 import com.zero.webmagic.entity.Url;
-import com.zero.webmagic.enums.FetchStatusEnum;
-import com.zero.webmagic.exception.ErrorPageException;
+import com.zero.webmagic.enums.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;
-import us.codecraft.webmagic.Spider;
-import us.codecraft.webmagic.model.annotation.ExtractBy;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.selector.Selectable;
 
@@ -20,10 +15,6 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -66,10 +57,12 @@ public class IpPageProcessor implements PageProcessor {
                 });
         System.out.println(String.format("url:%s data:%d",page.getUrl(),pageIps.size()));
         page.putField("ips",pageIps);
-        Url url = urlRepository.findUrlByUrl(page.getUrl().get());
+        synchronized (urlRepository){
+            Url url = urlRepository.findUrlByUrl(page.getUrl().get());
 
-        url.setStatus(FetchStatusEnum.SUCCESS);
-        urlRepository.save(url);
+            url.setStatus(Status.SUCCESS);
+            urlRepository.save(url);
+        }
         List<String> links = page.getHtml().links().regex(".+/inha/\\d+").all();
         page.addTargetRequests(links);
 

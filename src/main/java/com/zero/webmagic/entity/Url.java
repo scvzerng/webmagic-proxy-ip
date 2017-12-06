@@ -1,10 +1,7 @@
 package com.zero.webmagic.entity;
 
-import com.zero.webmagic.enums.FetchStatusEnum;
+import com.zero.webmagic.enums.Status;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -27,8 +24,8 @@ public class Url implements Serializable {
     private Long id;
     @Column(unique = true)
     private String url;
-    private FetchStatusEnum status = FetchStatusEnum.LOCK;
-    @OneToMany(mappedBy = "ip")
+    private Status status = Status.LOCK;
+    @OneToMany(mappedBy = "ip",fetch = FetchType.EAGER)
     private Set<Ip> ips;
     @ManyToOne
     @JoinColumn(name = "parent_id")

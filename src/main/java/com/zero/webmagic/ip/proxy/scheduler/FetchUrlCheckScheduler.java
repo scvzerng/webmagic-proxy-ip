@@ -2,14 +2,12 @@ package com.zero.webmagic.ip.proxy.scheduler;
 
 import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Url;
-import com.zero.webmagic.enums.FetchStatusEnum;
+import com.zero.webmagic.enums.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,13 +30,13 @@ public class FetchUrlCheckScheduler {
      */
     @PostConstruct
     public void init(){
-        List<Url> lockUrl = urlRepository.findUrlsByStatusIn(FetchStatusEnum.LOCK);
+        List<Url> lockUrl = urlRepository.findUrlsByStatusIn(Status.LOCK);
         urlRepository.saveAll(lockUrl
                 .stream()
                 .parallel()
                 .peek(url-> {
-                    log.info("{} status from {} to {}",url.getUrl(),url.getStatus(),FetchStatusEnum.FAIL);
-                    url.setStatus(FetchStatusEnum.FAIL);
+                    log.info("{} status from {} to {}",url.getUrl(),url.getStatus(), Status.FAIL);
+                    url.setStatus(Status.FAIL);
                 })
                 .collect(Collectors.toList()));
     }

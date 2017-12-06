@@ -4,7 +4,7 @@ import com.zero.webmagic.dao.IpRepository;
 import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Ip;
 import com.zero.webmagic.entity.Url;
-import com.zero.webmagic.enums.FetchStatusEnum;
+import com.zero.webmagic.enums.Status;
 import com.zero.webmagic.scan.IpConsumer;
 import com.zero.webmagic.scan.IpGenerator;
 import org.springframework.web.bind.annotation.*;
@@ -57,16 +57,16 @@ public class IpController {
             Optional
                     .ofNullable(
                             urlRepository.findUrlsByParentIdAndStatusIn(root.getId(),
-                                    FetchStatusEnum.FAIL,
-                                    FetchStatusEnum.LOCK)
+                                    Status.FAIL,
+                                    Status.LOCK)
                     ).ifPresent(
                     list->{
-                            urlRepository.saveAll(list.stream().peek(u-> u.setStatus(FetchStatusEnum.FAIL)).collect(Collectors.toList()));
+                            urlRepository.saveAll(list.stream().peek(u-> u.setStatus(Status.FAIL)).collect(Collectors.toList()));
                             list.stream()
                                     .map(Url::getUrl)
                                     .forEach(spider::addUrl);
                     });
-            if(root.getStatus()==FetchStatusEnum.FAIL){
+            if(root.getStatus()== Status.FAIL){
                 spider.addUrl(url);
             }
         }else{

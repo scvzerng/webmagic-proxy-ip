@@ -14,3 +14,7 @@ spring:
 logging:
   file: D://logs/${spring.application.name}.log
   level: info
+endpoints:
+  shutdown:
+    enabled: true
+    sensitive: false
