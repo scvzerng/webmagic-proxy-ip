@@ -172,22 +172,26 @@ public class JDBCProxyProvider implements ProxyProvider {
     @PostConstruct
     public void init(){
         new Thread(this::fetchValidIps).start();
+        new Thread(()->{
+
+                while (true) {
+                    try {
+                        Ip  ip = this.getInvalidIp();
+                        executorService.submit(() -> checkIp(ip));
+                        if (ip == null) break;
+
+                    } catch (InterruptedException ignore) {
+                    }
+
+                }
+
+        }).start();
     }
 
 
     /**
      * 每30秒钟发起对Ip的有效性验证
      */
-    @Scheduled(cron = "0/30 * * * * ?")
-    @Async
-    public void checkIpIsValid() throws InterruptedException {
-        while (true){
-            Ip ip =  this.getInvalidIp();
-            if(ip==null) break;
-            executorService.submit(()-> checkIp(ip));
-
-        }
-    }
 
     @PreDestroy
     public void destroy(){
