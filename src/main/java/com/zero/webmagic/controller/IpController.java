@@ -34,8 +34,9 @@ public class IpController {
     private static final String DEFAULT_URL = "http://www.kuaidaili.com/free/inha/";
     @Resource
     Spider spider;
+
     @GetMapping
-    public List<Ip> list(){
+    public List<Ip> list() {
         Ip ip = new Ip();
         ip.setIp("127.0.0.1");
         ip.setPort(8080);
@@ -43,14 +44,15 @@ public class IpController {
     }
 
     @PostMapping
-   public Ip add(@RequestBody Ip ip){
+    public Ip add(@RequestBody Ip ip) {
         return ipRepository.save(ip);
     }
+
     @GetMapping("/fetch")
-    public void fetch(@RequestParam(defaultValue = DEFAULT_URL) String url){
+    public void fetch(@RequestParam(defaultValue = DEFAULT_URL) String url) {
         Url root = urlRepository.findUrlByUrl(url);
 
-        if(root!=null){
+        if (root != null) {
             //装载初始url
             Optional
                     .ofNullable(
@@ -58,16 +60,16 @@ public class IpController {
                                     Status.FAIL,
                                     Status.LOCK)
                     ).ifPresent(
-                    list->{
-                            urlRepository.saveAll(list.stream().peek(u-> u.setStatus(Status.FAIL)).collect(Collectors.toList()));
-                            list.stream()
-                                    .map(Url::getUrl)
-                                    .forEach(spider::addUrl);
+                    list -> {
+                        urlRepository.saveAll(list.stream().peek(u -> u.setStatus(Status.FAIL)).collect(Collectors.toList()));
+                        list.stream()
+                                .map(Url::getUrl)
+                                .forEach(spider::addUrl);
                     });
-            if(root.getStatus()== Status.FAIL){
+            if (root.getStatus() == Status.FAIL) {
                 spider.addUrl(url);
             }
-        }else{
+        } else {
             spider.addUrl(url);
 
         }

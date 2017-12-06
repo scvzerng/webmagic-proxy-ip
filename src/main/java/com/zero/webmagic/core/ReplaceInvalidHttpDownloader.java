@@ -2,7 +2,6 @@ package com.zero.webmagic.core;
 
 import com.zero.webmagic.exception.ErrorPageException;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -19,13 +18,11 @@ import us.codecraft.webmagic.selector.PlainText;
 import us.codecraft.webmagic.utils.CharsetUtils;
 import us.codecraft.webmagic.utils.HttpClientUtils;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 /**
  * Created with IntelliJ IDEA.
@@ -91,11 +88,11 @@ public class ReplaceInvalidHttpDownloader extends AbstractDownloader {
             httpResponse = httpClient.execute(requestContext.getHttpUriRequest(), requestContext.getHttpClientContext());
             page = handleResponse(request, request.getCharset() != null ? request.getCharset() : task.getSite().getCharset(), httpResponse, task);
             onSuccess(request);
-            logger.info("downloading page success {} {}:{}", request.getUrl(),proxy==null?"":proxy.getHost(),proxy==null?"":proxy.getPort());
+            logger.info("downloading page success {} {}:{}", request.getUrl(), proxy == null ? "" : proxy.getHost(), proxy == null ? "" : proxy.getPort());
             return page;
-        } catch (IOException |ErrorPageException  e) {
-            logger.warn("download page {} error {}:{}", request.getUrl(),proxy==null?"":proxy.getHost(),proxy==null?"":proxy.getPort());
-            this.proxyProvider.returnProxy(proxy,null,null);
+        } catch (IOException | ErrorPageException e) {
+            logger.warn("download page {} error {}:{}", request.getUrl(), proxy == null ? "" : proxy.getHost(), proxy == null ? "" : proxy.getPort());
+            this.proxyProvider.returnProxy(proxy, null, null);
             onError(request);
             return page;
         } finally {
@@ -119,7 +116,7 @@ public class ReplaceInvalidHttpDownloader extends AbstractDownloader {
         String contentType = httpResponse.getEntity().getContentType() == null ? "" : httpResponse.getEntity().getContentType().getValue();
         Page page = new Page();
         page.setBytes(bytes);
-        if (!request.isBinaryContent()){
+        if (!request.isBinaryContent()) {
             if (charset == null) {
                 charset = getHtmlCharset(contentType, bytes);
             }
@@ -129,7 +126,8 @@ public class ReplaceInvalidHttpDownloader extends AbstractDownloader {
         page.setUrl(new PlainText(request.getUrl()));
         page.setRequest(request);
         page.setStatusCode(httpResponse.getStatusLine().getStatusCode());
-        if(page.getStatusCode()!=200||!page.getHtml().get().contains("代理")) throw new ErrorPageException("不是有效页面:"+page.getRawText());
+        if (page.getStatusCode() != 200 || !page.getHtml().get().contains("代理"))
+            throw new ErrorPageException("不是有效页面:" + page.getRawText());
 
         page.setDownloadSuccess(true);
         if (responseHeader) {

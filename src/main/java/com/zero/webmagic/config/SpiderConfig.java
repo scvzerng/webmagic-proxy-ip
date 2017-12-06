@@ -20,18 +20,17 @@ import us.codecraft.webmagic.scheduler.Scheduler;
 public class SpiderConfig {
 
 
+    @Bean
+    public Spider spider(Pipeline pipeline, PageProcessor pageProcessor, ReplaceInvalidHttpDownloader downloader, Scheduler scheduler) {
 
-   @Bean
-    public Spider spider(Pipeline pipeline, PageProcessor pageProcessor, ReplaceInvalidHttpDownloader downloader, Scheduler scheduler){
+        Spider spider = Spider.create(pageProcessor)
+                .setDownloader(downloader)
+                .addPipeline(pipeline)
+                .setScheduler(scheduler)
+                .thread(3);
 
-      Spider spider = Spider.create(pageProcessor)
-               .setDownloader(downloader)
-               .addPipeline(pipeline)
-               .setScheduler(scheduler)
-               .thread(3);
+        downloader.setSpider(spider);
+        return spider;
 
-       downloader.setSpider(spider);
-       return spider;
-
-   }
+    }
 }

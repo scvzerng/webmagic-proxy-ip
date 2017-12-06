@@ -30,7 +30,8 @@ import java.util.*;
 public class IpPageProcessor implements PageProcessor {
     @Resource
     private UrlRepository urlRepository;
-    @Transactional(dontRollbackOn = Exception.class,value = Transactional.TxType.REQUIRED)
+
+    @Transactional(dontRollbackOn = Exception.class, value = Transactional.TxType.REQUIRED)
     public void process(Page page) {
 
         List<Ip> pageIps = new ArrayList<>();
@@ -39,9 +40,9 @@ public class IpPageProcessor implements PageProcessor {
                 .$("#list")
                 .xpath("//tbody/tr")
                 .nodes()
-                .forEach(node->{
+                .forEach(node -> {
                     List<Selectable> nodes = node.xpath("//tr/td").nodes();
-                    if(nodes.size()>0){
+                    if (nodes.size() > 0) {
                         Ip ip = new Ip();
                         ip.setIp(nodes.get(0).xpath("//td/text()").get());
                         ip.setPort(Integer.valueOf(nodes.get(1).xpath("//td/text()").get()));
@@ -52,14 +53,14 @@ public class IpPageProcessor implements PageProcessor {
                         ip.setCanUse(false);
                         ip.setFailCount(0);
                         ip.setInsertTime(LocalDateTime.now());
-                        ip.setCheckTime(LocalDateTime.parse(nodes.get(6).xpath("//td/text()").get(),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                        ip.setCheckTime(LocalDateTime.parse(nodes.get(6).xpath("//td/text()").get(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                         pageIps.add(ip);
                     }
 
                 });
-        System.out.println(String.format("url:%s data:%d",page.getUrl(),pageIps.size()));
-        page.putField("ips",pageIps);
-        synchronized (urlRepository){
+        System.out.println(String.format("url:%s data:%d", page.getUrl(), pageIps.size()));
+        page.putField("ips", pageIps);
+        synchronized (urlRepository) {
             Url url = urlRepository.findUrlByUrl(page.getUrl().get());
 
             url.setStatus(Status.SUCCESS);
@@ -74,6 +75,6 @@ public class IpPageProcessor implements PageProcessor {
         return Site.me()
                 .setCharset("UTF-8")
                 .setSleepTime(3000)
-                .addHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36");
+                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36");
     }
 }

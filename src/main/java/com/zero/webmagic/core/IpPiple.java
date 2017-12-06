@@ -31,7 +31,8 @@ public class IpPiple implements Pipeline {
     @Resource
     private
     IpRepository ipRepository;
-    @Transactional(dontRollbackOn = Exception.class,value = Transactional.TxType.REQUIRED)
+
+    @Transactional(dontRollbackOn = Exception.class, value = Transactional.TxType.REQUIRED)
     public void process(ResultItems resultItems, Task task) {
         List<Ip> ips = resultItems.get("ips");
         Optional.ofNullable(ips).ifPresent(exist ->
@@ -40,7 +41,7 @@ public class IpPiple implements Pipeline {
                                 Objects.isNull(ipRepository.findByIp(ip.getIp())))
                         .forEach(ip -> {
                             try {
-                                synchronized (ipRepository){
+                                synchronized (ipRepository) {
                                     ipRepository.save(ip);
                                 }
                             } catch (Exception e) {

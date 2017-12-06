@@ -1,6 +1,5 @@
 package com.zero.webmagic.entity;
 
-import com.zero.webmagic.entity.Ip;
 import lombok.Getter;
 import us.codecraft.webmagic.proxy.Proxy;
 
@@ -15,6 +14,7 @@ import us.codecraft.webmagic.proxy.Proxy;
 public class IpProxy extends Proxy {
     @Getter
     private Ip ip;
+
     public IpProxy(Ip ip) {
         super(ip.getIp(), ip.getPort());
         this.ip = ip;

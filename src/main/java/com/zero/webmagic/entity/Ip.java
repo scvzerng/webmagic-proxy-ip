@@ -1,15 +1,10 @@
 package com.zero.webmagic.entity;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Set;
 
 /**
@@ -40,6 +35,6 @@ public class Ip implements Serializable {
     private Integer failCount = 0;
     private LocalDateTime insertTime;
     private LocalDateTime updateTime;
-    @OneToMany(mappedBy ="url",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "url", fetch = FetchType.EAGER)
     private Set<Url> urls;
 }

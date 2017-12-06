@@ -14,8 +14,10 @@ import java.util.List;
  *
  * @author scvzerng
  **/
-public interface UrlRepository extends CrudRepository<Url,Long> {
-     List<Url> findUrlsByStatusIn(Status... statusEnum);
+public interface UrlRepository extends CrudRepository<Url, Long> {
+    List<Url> findUrlsByStatusIn(Status... statusEnum);
+
     Url findUrlByUrl(String url);
-    List<Url> findUrlsByParentIdAndStatusIn(Long id,Status... statusEnum);
+
+    List<Url> findUrlsByParentIdAndStatusIn(Long id, Status... statusEnum);
 }

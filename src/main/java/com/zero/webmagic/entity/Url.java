@@ -25,7 +25,7 @@ public class Url implements Serializable {
     @Column(unique = true)
     private String url;
     private Status status = Status.LOCK;
-    @OneToMany(mappedBy = "ip",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "ip", fetch = FetchType.EAGER)
     private Set<Ip> ips;
     @ManyToOne
     @JoinColumn(name = "parent_id")

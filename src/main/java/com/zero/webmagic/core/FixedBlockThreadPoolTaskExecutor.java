@@ -16,7 +16,7 @@ import java.util.concurrent.*;
 
 public class FixedBlockThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
     //阻塞队列
-    private final BlockingQueue<Runnable> blockingQueue  ;
+    private final BlockingQueue<Runnable> blockingQueue;
 
     private FixedBlockThreadPoolTaskExecutor(int queueSize, int poolSize) {
         this.blockingQueue = new LinkedBlockingDeque<>(queueSize);
@@ -33,7 +33,7 @@ public class FixedBlockThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
             blockingQueue.put(task);
             super.execute(blockingQueue.take());
         } catch (InterruptedException ignore) {
-         Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -43,8 +43,8 @@ public class FixedBlockThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
     }
 
 
-    public static ThreadPoolTaskExecutor newFixedThreadPool(int queueSize, int poolSize){
-        FixedBlockThreadPoolTaskExecutor taskExecutor = new FixedBlockThreadPoolTaskExecutor(queueSize,poolSize);
+    public static ThreadPoolTaskExecutor newFixedThreadPool(int queueSize, int poolSize) {
+        FixedBlockThreadPoolTaskExecutor taskExecutor = new FixedBlockThreadPoolTaskExecutor(queueSize, poolSize);
         taskExecutor.initialize();
         return taskExecutor;
     }

@@ -41,47 +41,48 @@ public class CycleRetryScheduler extends DuplicateRemovedScheduler implements Mo
      * 初始化解锁所有锁定的URL
      */
     @PostConstruct
-    public void init(){
+    public void init() {
         List<Url> lockUrl = urlRepository.findUrlsByStatusIn(Status.LOCK);
         urlRepository.saveAll(lockUrl
                 .stream()
                 .parallel()
-                .peek(url-> {
-                    log.info("{} status from {} to {}",url.getUrl(),url.getStatus(), Status.FAIL);
+                .peek(url -> {
+                    log.info("{} status from {} to {}", url.getUrl(), url.getStatus(), Status.FAIL);
                     url.setStatus(Status.FAIL);
                 })
                 .collect(Collectors.toList()));
     }
+
     @Override
     public void pushWhenNoDuplicate(Request request, Task task) {
-        synchronized (urlRepository){
+        synchronized (urlRepository) {
             Url url = urlRepository.findUrlByUrl(request.getUrl());
             LocalDateTime now = LocalDateTime.now();
 
-            if(url==null){
+            if (url == null) {
                 url = new Url();
                 url.setStatus(Status.LOCK);
                 url.setUrl(request.getUrl());
                 url.setInsertTime(now);
                 url.setUpdateTime(now);
-                if(parentId.get()>0L){
+                if (parentId.get() > 0L) {
                     Url parent = new Url();
                     parent.setId(parentId.get());
                     url.setParent(parent);
 
                 }
                 urlRepository.save(url);
-                if(parentId.get()==0){
+                if (parentId.get() == 0) {
                     parentId.set(url.getId());
 
                 }
 
-            }else{
-                if(url.getParent()!=null){
+            } else {
+                if (url.getParent() != null) {
                     parentId.set(url.getParent().getId());
                 }
 
-                if(url.getStatus()== Status.SUCCESS){
+                if (url.getStatus() == Status.SUCCESS) {
                     return;
                 }
                 url.setStatus(Status.LOCK);
@@ -98,7 +99,7 @@ public class CycleRetryScheduler extends DuplicateRemovedScheduler implements Mo
 
     @Override
     public void push(Request request, Task task) {
-        pushWhenNoDuplicate(request,task);
+        pushWhenNoDuplicate(request, task);
     }
 
     @Override

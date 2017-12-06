@@ -10,5 +10,5 @@ import org.springframework.data.repository.CrudRepository;
  *
  * @author scvzerng
  **/
-public interface IpUrlRepository extends CrudRepository<IpUrl,Long> {
+public interface IpUrlRepository extends CrudRepository<IpUrl, Long> {
 }

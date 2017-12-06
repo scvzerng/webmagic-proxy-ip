@@ -8,5 +8,5 @@ package com.zero.webmagic.enums;
  * @author scvzerng
  **/
 public enum Status {
-    SUCCESS,FAIL,LOCK
+    SUCCESS, FAIL, LOCK
 }
