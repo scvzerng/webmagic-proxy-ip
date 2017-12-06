@@ -12,6 +12,7 @@ import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.selector.Selectable;
 
 import javax.annotation.Resource;
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -29,6 +30,7 @@ import java.util.*;
 public class IpPageProcessor implements PageProcessor {
     @Resource
     private UrlRepository urlRepository;
+    @Transactional(dontRollbackOn = Exception.class,value = Transactional.TxType.REQUIRED)
     public void process(Page page) {
 
         List<Ip> pageIps = new ArrayList<>();

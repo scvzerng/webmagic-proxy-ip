@@ -1,13 +1,21 @@
 package com.zero.webmagic.proxy;
 
+import com.alibaba.fastjson.JSON;
 import com.zero.webmagic.dao.IpRepository;
 import com.zero.webmagic.entity.Ip;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import us.codecraft.webmagic.Page;
@@ -47,13 +55,13 @@ public class JDBCProxyProvider implements ProxyProvider {
     @Resource
     IpRepository ipRepository;
     //有效IP队列
-    private static  BlockingQueue<Ip> validIp = new LinkedBlockingQueue<>(10);
+    private static  BlockingQueue<Ip> validIp = new LinkedBlockingQueue<>(30);
     //锁定队列
     private static  Map<Ip,Ip> lockIp = new ConcurrentHashMap<>();
     //失效队列
-    private static  BlockingQueue<Ip> invalidIp = new LinkedBlockingQueue<>(10);
-
-    private static  ExecutorService executorService = Executors.newFixedThreadPool(30);
+    private static volatile   BlockingQueue<Ip> invalidIp = new LinkedBlockingQueue<>(30);
+    //阻塞线程池
+    private static TaskExecutor executorService = FixedBlockThreadPoolTaskExecutor.newFixedThreadPool(50,30);
 
     private static  AtomicBoolean INIT = new AtomicBoolean(true);
     private static  AtomicInteger pageNum = new AtomicInteger(0);
@@ -113,6 +121,7 @@ public class JDBCProxyProvider implements ProxyProvider {
         if(invalidIp.contains(ip)) return;
         try {
             invalidIp.put(ip);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -147,6 +156,7 @@ public class JDBCProxyProvider implements ProxyProvider {
      */
     public void fetchValidIps(){
         while (true){
+
             Pageable pageable = PageRequest.of(pageNum.getAndIncrement(),100, Sort.by(Sort.Order.asc("updateTime")));
             org.springframework.data.domain.Page<Ip> page = ipRepository.findAll(pageable);
             total.getAndSet(page.getTotalPages());
@@ -157,12 +167,6 @@ public class JDBCProxyProvider implements ProxyProvider {
             }else{
                 log.info("total:{} current:{} reset 0",total.get(),pageNum.get());
                 pageNum.set(0);
-                try {
-                    Thread.sleep(30000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
             }
 
         }
@@ -177,10 +181,11 @@ public class JDBCProxyProvider implements ProxyProvider {
                 while (true) {
                     try {
                         Ip  ip = this.getInvalidIp();
-                        executorService.submit(() -> checkIp(ip));
+                        executorService.execute(() -> checkIp(ip));
                         if (ip == null) break;
 
                     } catch (InterruptedException ignore) {
+                        ignore.printStackTrace();
                     }
 
                 }

@@ -10,6 +10,7 @@ import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
 
 import javax.annotation.Resource;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,7 +30,7 @@ public class IpPiple implements Pipeline {
     @Resource
     private
     IpRepository ipRepository;
-
+    @Transactional(dontRollbackOn = Exception.class,value = Transactional.TxType.REQUIRED)
     public void process(ResultItems resultItems, Task task) {
         List<Ip> ips = resultItems.get("ips");
         Optional.ofNullable(ips).ifPresent(exist ->
