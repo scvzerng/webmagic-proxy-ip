@@ -1,4 +1,4 @@
-package com.zero.webmagic.proxy;
+package com.zero.webmagic.core;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 

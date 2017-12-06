@@ -1,23 +1,14 @@
-package com.zero.webmagic.proxy;
+package com.zero.webmagic.core;
 
-import com.alibaba.fastjson.JSON;
 import com.zero.webmagic.dao.IpRepository;
 import com.zero.webmagic.entity.Ip;
+import com.zero.webmagic.entity.IpProxy;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.task.AsyncTaskExecutor;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.SchedulingTaskExecutor;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.proxy.Proxy;
@@ -30,18 +21,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * 提供动态代理并验证代理有效性
  * Created with IntelliJ IDEA.
  * User: Administrator
  * Year: 2017-2017/12/3-13:56
@@ -94,7 +81,7 @@ public class JDBCProxyProvider implements ProxyProvider {
 
     public void addValidIp(Ip ip) throws InterruptedException {
         if(ip==null) return;
-        if(validIp.contains(ip)) return;
+        if(validIp.contains(ip)&&ip.getFailCount()>20) return;
         validIp.put(ip);
     }
 

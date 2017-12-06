@@ -1,4 +1,4 @@
-package com.zero.webmagic.ip.piple;
+package com.zero.webmagic.core;
 
 import com.alibaba.fastjson.JSON;
 import com.zero.webmagic.dao.IpRepository;
@@ -17,6 +17,7 @@ import java.util.Optional;
 
 
 /**
+ * 代理IP持久化至数据库
  * Created with IntelliJ IDEA.
  * User: Administrator
  * Year: 2017-2017/12/2-12:54

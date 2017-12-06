@@ -1,21 +1,26 @@
-package com.zero.webmagic.ip.proxy.scheduler;
+package com.zero.webmagic.core;
 
 import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Url;
 import com.zero.webmagic.enums.Status;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.scheduler.DuplicateRemovedScheduler;
 import us.codecraft.webmagic.scheduler.MonitorableScheduler;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
+ * 对URL进行持久化和初始状态解锁
  * Created with IntelliJ IDEA.
  * User: Administrator
  * Year: 2017-2017/12/3-22:18
@@ -24,11 +29,29 @@ import java.util.concurrent.atomic.AtomicLong;
  * To change this template use File | Settings | File Templates.
  */
 @Component
+@Slf4j
 public class CycleRetryScheduler extends DuplicateRemovedScheduler implements MonitorableScheduler {
-    @Resource
-    private UrlRepository urlRepository;
+
     private BlockingQueue<Request> queue = new LinkedBlockingQueue<Request>();
     AtomicLong parentId = new AtomicLong(0);
+    @Resource
+    UrlRepository urlRepository;
+
+    /**
+     * 初始化解锁所有锁定的URL
+     */
+    @PostConstruct
+    public void init(){
+        List<Url> lockUrl = urlRepository.findUrlsByStatusIn(Status.LOCK);
+        urlRepository.saveAll(lockUrl
+                .stream()
+                .parallel()
+                .peek(url-> {
+                    log.info("{} status from {} to {}",url.getUrl(),url.getStatus(), Status.FAIL);
+                    url.setStatus(Status.FAIL);
+                })
+                .collect(Collectors.toList()));
+    }
     @Override
     public void pushWhenNoDuplicate(Request request, Task task) {
         synchronized (urlRepository){

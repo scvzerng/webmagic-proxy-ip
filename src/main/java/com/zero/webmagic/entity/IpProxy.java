@@ -1,4 +1,4 @@
-package com.zero.webmagic.proxy;
+package com.zero.webmagic.entity;
 
 import com.zero.webmagic.entity.Ip;
 import lombok.Getter;

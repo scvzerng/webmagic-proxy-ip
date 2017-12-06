@@ -5,8 +5,6 @@ import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Ip;
 import com.zero.webmagic.entity.Url;
 import com.zero.webmagic.enums.Status;
-import com.zero.webmagic.scan.IpConsumer;
-import com.zero.webmagic.scan.IpGenerator;
 import org.springframework.web.bind.annotation.*;
 import us.codecraft.webmagic.Spider;
 
@@ -77,15 +75,5 @@ public class IpController {
         spider.setSpawnUrl(true).start();
     }
 
-    @GetMapping("/scan")
-    public void scan(@RequestParam(defaultValue = "1") Integer threads){
-        IpGenerator ipGenerator = new IpGenerator();
-        ipGenerator.start();
-
-        for(int i=0;i<threads;i++){
-            IpConsumer ipConsumer = new IpConsumer(ipRepository);
-            ipConsumer.start();
-        }
-    }
 
 }

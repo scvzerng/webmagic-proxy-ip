@@ -1,4 +1,4 @@
-package com.zero.webmagic.downloader;
+package com.zero.webmagic.core;
 
 import com.zero.webmagic.exception.ErrorPageException;
 import lombok.Setter;

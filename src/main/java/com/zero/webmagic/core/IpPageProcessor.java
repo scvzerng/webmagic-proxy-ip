@@ -1,4 +1,4 @@
-package com.zero.webmagic.ip;
+package com.zero.webmagic.core;
 
 import com.zero.webmagic.dao.UrlRepository;
 import com.zero.webmagic.entity.Ip;

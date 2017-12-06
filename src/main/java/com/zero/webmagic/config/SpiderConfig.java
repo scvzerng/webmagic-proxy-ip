@@ -1,6 +1,6 @@
 package com.zero.webmagic.config;
 
-import com.zero.webmagic.downloader.ReplaceInvalidHttpDownloader;
+import com.zero.webmagic.core.ReplaceInvalidHttpDownloader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import us.codecraft.webmagic.Spider;
