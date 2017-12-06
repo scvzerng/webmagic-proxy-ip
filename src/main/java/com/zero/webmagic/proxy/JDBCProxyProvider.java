@@ -15,6 +15,7 @@ import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.proxy.Proxy;
 import us.codecraft.webmagic.proxy.ProxyProvider;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -45,15 +47,17 @@ public class JDBCProxyProvider implements ProxyProvider {
     @Resource
     IpRepository ipRepository;
     //有效IP队列
-    private BlockingQueue<Ip> validIp = new LinkedBlockingQueue<>();
+    private static  BlockingQueue<Ip> validIp = new LinkedBlockingQueue<>(10);
     //锁定队列
-    private Map<Ip,Ip> lockIp = new ConcurrentHashMap<>();
+    private static  Map<Ip,Ip> lockIp = new ConcurrentHashMap<>();
     //失效队列
-    private BlockingQueue<Ip> invalidIp = new LinkedBlockingQueue<>();
+    private static  BlockingQueue<Ip> invalidIp = new LinkedBlockingQueue<>(10);
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(30);
+    private static  ExecutorService executorService = Executors.newFixedThreadPool(30);
 
-    private AtomicBoolean INIT = new AtomicBoolean(true);
+    private static  AtomicBoolean INIT = new AtomicBoolean(true);
+    private static  AtomicInteger pageNum = new AtomicInteger(0);
+    private static  AtomicInteger total = new AtomicInteger(0);
 
     @Override
     public void returnProxy(Proxy proxy, Page page, Task task) {
@@ -141,17 +145,34 @@ public class JDBCProxyProvider implements ProxyProvider {
     /**
      * 每秒抽取100IP放到队列等待验证其有效性
      */
-    @Scheduled(cron = "0/1 * * * * ?")
     public void fetchValidIps(){
-        Pageable pageable = PageRequest.of(0,100, Sort.by(Sort.Order.asc("updateTime")));
+        while (true){
+            Pageable pageable = PageRequest.of(pageNum.getAndIncrement(),100, Sort.by(Sort.Order.asc("updateTime")));
+            org.springframework.data.domain.Page<Ip> page = ipRepository.findAll(pageable);
+            total.getAndSet(page.getTotalPages());
 
-        org.springframework.data.domain.Page<Ip> page = ipRepository.findAll(pageable);
-        if(page.hasContent()){
-            page.getContent().forEach(this::addInValidIp);
+            if(page.hasContent()){
+                page.getContent().forEach(this::addInValidIp);
+
+            }else{
+                log.info("total:{} current:{} reset 0",total.get(),pageNum.get());
+                pageNum.set(0);
+                try {
+                    Thread.sleep(30000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
 
         }
+
     }
 
+    @PostConstruct
+    public void init(){
+        new Thread(this::fetchValidIps).start();
+    }
 
 
     /**

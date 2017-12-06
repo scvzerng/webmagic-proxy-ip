@@ -58,7 +58,7 @@ public class CycleRetryScheduler extends DuplicateRemovedScheduler implements Mo
                     parentId.set(url.getParent().getId());
                 }
 
-                if(url.getStatus()== Status.SUCCESS||url.getStatus()== Status.LOCK){
+                if(url.getStatus()== Status.SUCCESS){
                     return;
                 }
                 url.setStatus(Status.LOCK);
