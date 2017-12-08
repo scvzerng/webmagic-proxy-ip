@@ -5,4 +5,4 @@
 - MySQL
 - spring boot
 
-![image](https://github.com/scvzerng/webmagic-proxy-ip/blob/master/shutdown.png)
+![image](http://git.yazuosoft.com/architecture/yazuo-framework/blob/4ccdeabf82e669d0bbc88319efde417ef23a7c4c/shutdown-starter/shutdown.png)
