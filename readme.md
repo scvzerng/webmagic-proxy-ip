@@ -4,3 +4,5 @@
 - WebMagic
 - MySQL
 - spring boot
+
+![image](https://github.com/scvzerng/webmagic-proxy-ip/shutdown.png)

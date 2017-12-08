@@ -81,7 +81,8 @@ public class JDBCProxyProvider implements ProxyProvider {
 
     public void addValidIp(Ip ip) throws InterruptedException {
         if (ip == null) return;
-        if (validIp.contains(ip) && ip.getFailCount() > 20) return;
+        if(ip.getFailCount()>20) return;
+        if (validIp.contains(ip)) return;
         validIp.put(ip);
     }
 
